@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <title>Arcoíris Emocional · Rueda Interactiva</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: linear-gradient(145deg, #1a1a2e 0%, #0f0f1a 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: system-ui, 'Segoe UI', 'Helvetica Neue', sans-serif;
+            padding: 16px;
+        }
+
+        /* Contenedor principal tipo tarjeta */
+        .app-container {
+            max-width: 500px;
+            width: 100%;
+            background: rgba(22, 22, 40, 0.65);
+            backdrop-filter: blur(2px);
+            border-radius: 64px 64px 48px 48px;
+            box-shadow: 0 25px 45px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.1);
+            overflow: hidden;
+            padding: 20px 12px 30px;
+            border: 1px solid rgba(255,255,255,0.15);
+        }
+
+        /* Área de la rueda (ocupa mitad superior + un poco más) */
+        .wheel-area {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1 / 0.95;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 10px;
+            touch-action: pan-x pan-y; /* permite scroll vertical pero también rotación horizontal */
+        }
+
+        canvas {
+            position: absolute;
+            width: 100%;
+            height: auto;
+            background: #0b0b14;
+            border-radius: 50%;
+            box-shadow: 0 12px 28px black, 0 0 0 5px rgba(255,215,150,0.3);
+            transition: box-shadow 0.2s;
+            cursor: grab;
+        }
+        canvas:active {
+            cursor: grabbing;
+        }
+
+        /* Centro fijo marcador */
+        .center-marker {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 70px;
+            height: 70px;
+            background: #11101fcc;
+            backdrop-filter: blur(12px);
+            border-radius: 60px;
+            transform: translate(-50%, -50%);
+            border: 2px solid #ffdf9c;
+            box-shadow: 0 0 0 4px rgba(0,0,0,0.5), 0 0 0 8px rgba(255,220,120,0.2);
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.9rem;
+            pointer-events: none;
+            color: #ffecb3;
+            text-shadow: 0 2px 3px black;
+        }
+
+        /* Indicador de giro (pequeña flecha) */
+        .drag-hint {
+            text-align: center;
+            font-size: 0.75rem;
+            letter-spacing: 2px;
+            color: #ccc6e0;
+            margin-top: 8px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+        }
+        .drag-hint span {
+            background: #2a2742;
+            padding: 4px 12px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+        }
+
+        /* Botón elegir emoción */
+        .select-btn {
+            background: linear-gradient(95deg, #ffb347, #ff7e05);
+            border: none;
+            width: 85%;
+            margin: 8px auto 12px;
+            display: block;
+            padding: 14px 10px;
+            border-radius: 100px;
+            font-weight: bold;
+            font-size: 1.3rem;
+            color: #221c00;
+            box-shadow: 0 5px 0 #8b3c00;
+            transition: 0.07s linear;
+            cursor: pointer;
+            text-align: center;
+        }
+        .select-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #8b3c00;
+        }
+
+        /* Tarjeta deslizante de emociones */
+        .info-card {
+            background: #1e1c2cee;
+            backdrop-filter: blur(20px);
+            border-radius: 48px;
+            padding: 20px 18px;
+            margin-top: 16px;
+            border: 1px solid rgba(255,190,110,0.5);
+            transition: all 0.25s ease;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+        }
+        .emotion-name {
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #FFE6B0, #FFB347);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            display: inline-block;
+            margin-bottom: 8px;
+        }
+        .section-title {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            color: #ffcd94;
+            margin-top: 12px;
+            margin-bottom: 4px;
+            font-weight: 600;
+        }
+        .desc-text {
+            color: #f0eee9;
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+        .face-emoji {
+            font-size: 2rem;
+            background: #2b273f;
+            display: inline-block;
+            padding: 5px 16px;
+            border-radius: 60px;
+            margin: 8px 0 4px;
+        }
+        .tech-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+            flex-wrap: wrap;
+        }
+        .tech-btn {
+            flex: 1;
+            background: #2d2a44;
+            border: none;
+            padding: 10px 8px;
+            border-radius: 34px;
+            font-weight: 600;
+            color: #ffeaC0;
+            font-size: 0.85rem;
+            transition: 0.1s;
+            cursor: pointer;
+        }
+        .tech-btn:active {
+            background: #534e7a;
+            transform: scale(0.97);
+        }
+        .dynamic-text {
+            background: #0f0e1a;
+            border-radius: 28px;
+            padding: 14px;
+            margin-top: 14px;
+            font-size: 0.9rem;
+            color: #ded9ff;
+            border-left: 4px solid #ffaa33;
+        }
+        footer {
+            font-size: 0.65rem;
+            text-align: center;
+            color: #6a6590;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+<div class="app-container">
+    <div class="wheel-area">
+        <canvas id="emotionWheelCanvas" width="600" height="600"></canvas>
+        <div class="center-marker">🌀</div>
+    </div>
+    <div class="drag-hint">
+        <span>👉 Desliza horizontalmente para girar</span>
+    </div>
+    <button class="select-btn" id="selectEmotionBtn">✨ Elegir esta emoción ✨</button>
+
+    <div class="info-card" id="infoCard">
+        <div style="display: flex; align-items: baseline; gap: 12px;">
+            <span class="emotion-name" id="currentEmotionTitle">Rabia</span>
+            <span class="face-emoji" id="faceEmoji">😠</span>
+        </div>
+        <div class="section-title">🌬️ ¿Cómo se siente en el cuerpo?</div>
+        <div class="desc-text" id="bodyDesc">Mandíbula tensa, calor en pecho, puños cerrados, energía explosiva.</div>
+
+        <div class="section-title">🎭 Expresión facial</div>
+        <div class="desc-text" id="faceDesc">Cejas hacia abajo, labios apretados, mirada fija intensa.</div>
+
+        <div class="tech-buttons">
+            <button class="tech-btn" id="acceptBtn">🤲 Aceptar esta emoción</button>
+            <button class="tech-btn" id="manageBtn">🛠️ Técnica para gestionar</button>
+        </div>
+        <div class="dynamic-text" id="dynamicAdvice">
+            Tómate 3 respiraciones. Di: "Tengo derecho a sentir rabia, pero puedo elegir cómo actuar".
+        </div>
+    </div>
+    <footer>Rueda de Plutchik · gira y elige tu emoción</footer>
+</div>
+
+<script>
+    // ---------- DATOS DE EMOCIONES ----------
+    const EMOTIONS = [
+        { name: "Rabia",     color: "#E53E3E", base: "rojo",     body: "Mandíbula tensa, calor en pecho, puños cerrados, ritmo cardíaco acelerado.", face: "Cejas hacia abajo, labios apretados, mirada fija e intensa.", emoji: "😠", accept: "Reconoce la rabia sin juzgarte. Respira hondo 5 veces y di: 'Esto es importante para mí'.", manage: "🔴 Técnica para rabia: Respiración 4-7-8 (inhala 4s, retén 7s, exhala 8s). Aléjate 5 minutos y golpea una almohada o escribe lo que sientes." },
+        { name: "Alegría",   color: "#F6E05E", base: "amarillo", body: "Cuerpo ligero, ganas de reír o saltar, pecho abierto, energía vital.", face: "Ojos arrugados (patas de gallo), mejillas altas, boca mostrando dientes.", emoji: "😊", accept: "Disfruta la sensación. Agradece en silencio: 'Estoy sintiendo alegría, qué bonito es estar vivo'.", manage: "🌟 Comparte tu alegría: regálale un cumplido a alguien o escribe 3 cosas buenas que pasaron hoy." },
+        { name: "Tristeza",   color: "#63B3ED", base: "azul",     body: "Peso en el pecho, hombros caídos, ojos llorosos, falta de energía.", face: "Esquinas de labios hacia abajo, mirada baja, párpados superiores caídos.", emoji: "😢", accept: "Permítete llorar 5 minutos. Pon una mano en el corazón y di: 'Está bien sentir tristeza'.", manage: "💧 Escribe una carta que no enviarás o recuerda un abrazo pasado. Sal a caminar mirando el cielo 5 minutos." },
+        { name: "Miedo",      color: "#9F7AEA", base: "violeta",  body: "Nudo en la garganta, respiración corta, tensión en el vientre, manos frías.", face: "Ojos muy abiertos, cejas levantadas y juntas, labios tensos horizontalmente.", emoji: "😨", accept: "Apoya una mano en el pecho. Di: 'Tengo miedo, pero ahora estoy a salvo en este momento'.", manage: "🟣 Semáforo del miedo: Alto (respira), Amarillo (nombra el miedo), Verde (acción pequeña: mover un dedo, dar un paso)." },
+        { name: "Confianza",  color: "#48BB78", base: "verde",    body: "Relajación muscular, respiración tranquila, sensación de calidez en el pecho.", face: "Cabeza ligeramente inclinada, sonrisa suave, contacto visual relajado.", emoji: "🤝", accept: "Disfruta la seguridad. Di: 'Confío en mí y en mi entorno en este instante'.", manage: "🌱 Fortalece la confianza: recuerda 2 veces que actuaste bien. Abraza a alguien o a ti mismo." },
+        { name: "Sorpresa",   color: "#FBBF24", base: "naranja",  body: "Cuerpo en alerta, cejas elevadas, boca abierta, respiración corta.", face: "Cejas arqueadas, ojos muy abiertos, mandíbula caída.", emoji: "😲", accept: "Respira y observa. La sorpresa es neutral, sólo curiosidad.", manage: "⚡ Convierte sorpresa en asombro: mira alrededor y anota algo nuevo que veas. Da un aplauso suave." },
+        { name: "Anticipación",color: "#F687B3", base: "rosa",     body: "Nervio suave en el estómago, atención focalizada, ligera inquietud.", face: "Mirada adelante, cejas ligeramente elevadas, labios entreabiertos.", emoji: "🔮", accept: "Siente la emoción de lo posible. Planea un paso pequeño.", manage: "📝 Divide lo que esperas en 3 mini pasos. Concéntrate en el presente tocando una superficie." },
+        { name: "Amor",       color: "#ED64A6", base: "rosado",   body: "Calor en el pecho, mejillas sonrosadas, sensación de conexión y suavidad.", face: "Sonrisa auténtica, mirada brillante, cabeza ladeada.", emoji: "🥰", accept: "Agradece sentir amor. Abraza a alguien o a una mascota.", manage: "💖 Cultiva amor propio: escribe 'Merezco cariño'. Repite una frase amable para ti." },
+        { name: "Culpa",      color: "#A0AEC0", base: "gris",     body: "Nudo en el estómago, opresión en la garganta, mirada baja.", face: "Esquinas de boca hacia abajo, cejas tensas en el centro, mirada huidiza.", emoji: "😔", accept: "Reconoce tu error sin castigarte. Eres humano. Di: 'Aprendo de esto'.", manage: "📖 Repara: escribe una disculpa o un compromiso para no repetirlo. Luego suelta." },
+        { name: "Asco",       color: "#68D391", base: "verde claro", body: "Náusea leve, arruga en la nariz, rechazo instintivo, retirada.", face: "Nariz arrugada, labio superior elevado, cejas fruncidas.", emoji: "🤢", accept: "Permítete apartarte de lo que te disgusta. Tu cuerpo te protege.", manage: "🧼 Higiene emocional: aléjate físicamente, lava tus manos, respira un aroma agradable." },
+        { name: "Serenidad",  color: "#B2F5EA", base: "celeste",   body: "Cuerpo flotante, hombros relajados, respiración lenta y profunda.", face: "Sonrisa leve, ojos calmados, párpados semi cerrados.", emoji: "😌", accept: "Quédate 30 segundos sintiendo esta paz. No necesitas hacer nada más.", manage: "🌊 Técnica para mantener serenidad: respira mirando una vela o un vaso de agua." },
+        { name: "Optimismo",   color: "#FBD38D", base: "melón",    body: "Sensación de ligereza, sonrisa fácil, mirada hacia adelante con energía.", face: "Comisuras de labios arriba, ojos brillantes, cejas suavemente elevadas.", emoji: "🙂✨", accept: "Celebra el optimismo: piensa en algo posible y bonito que harás.", manage: "🌈 Potencia optimismo: escribe 1 meta pequeña para hoy y sonríe al completarla." }
+    ];
+
+    const TOTAL = EMOTIONS.length;
+    const ANGLE_PER = (Math.PI * 2) / TOTAL;
+    let rotationAngle = 0;     // radianes
+    let startX = 0, startY = 0;
+    let isDragging = false;
+    let canvas, ctx;
+    let currentIndex = 0;      // según rotación, indice que apunta al centro (marcador arriba)
+
+    // elementos dom
+    const canvasEl = document.getElementById('emotionWheelCanvas');
+    const selectBtn = document.getElementById('selectEmotionBtn');
+    const acceptBtn = document.getElementById('acceptBtn');
+    const manageBtn = document.getElementById('manageBtn');
+
+    const currentEmotionTitle = document.getElementById('currentEmotionTitle');
+    const faceEmojiSpan = document.getElementById('faceEmoji');
+    const bodyDescDiv = document.getElementById('bodyDesc');
+    const faceDescDiv = document.getElementById('faceDesc');
+    const dynamicAdvice = document.getElementById('dynamicAdvice');
+
+    // actualizar ui según emoción actual (índice)
+    function updateUIByIndex(idx) {
+        const e = EMOTIONS[idx];
+        currentEmotionTitle.innerText = e.name;
+        faceEmojiSpan.innerText = e.emoji;
+        bodyDescDiv.innerText = e.body;
+        faceDescDiv.innerText = e.face;
+        // Restauramos texto por defecto pero los botones se encargan de actualizar dinámicamente
+        dynamicAdvice.innerHTML = `✨ Haz clic en "Aceptar" o "Gestionar" para ver herramientas para <strong>${e.name}</strong>.`;
+    }
+
+    // dibujar rueda entera con rotación
+    function drawWheel() {
+        if (!canvas) return;
+        const w = canvas.width, h = canvas.height;
+        ctx.clearRect(0, 0, w, h);
+        const centerX = w/2, centerY = h/2;
+        const radius = w * 0.44;   // tamaño perfecto para móvil
+
+        for (let i = 0; i < TOTAL; i++) {
+            const start = i * ANGLE_PER + rotationAngle;
+            const end = (i+1) * ANGLE_PER + rotationAngle;
+            const emo = EMOTIONS[i];
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY);
+            ctx.arc(centerX, centerY, radius, start, end);
+            ctx.closePath();
+            ctx.fillStyle = emo.color;
+            ctx.fill();
+            ctx.save();
+            ctx.shadowBlur = 0;
+            ctx.strokeStyle = '#ffffff40';
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+            // dibujar texto
+            ctx.fillStyle = '#1a1400';
+            ctx.font = `bold ${Math.floor(radius * 0.12)}px system-ui`;
+            ctx.shadowBlur = 0;
+            const midAngle = start + ANGLE_PER/2;
+            const textRadius = radius * 0.72;
+            const x = centerX + Math.cos(midAngle) * textRadius;
+            const y = centerY + Math.sin(midAngle) * textRadius;
+            let shortName = emo.name.length > 8 ? emo.name.slice(0,7)+'..' : emo.name;
+            ctx.fillStyle = '#111';
+            ctx.shadowColor = 'rgba(255,255,200,0.6)';
+            ctx.fillText(shortName, x-15, y+5);
+            ctx.fillStyle = 'white';
+            ctx.fillText(shortName, x-16, y+4);
+        }
+        // círculo central
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius*0.16, 0, 2*Math.PI);
+        ctx.fillStyle = "#FFE2A4";
+        ctx.shadowBlur = 6;
+        ctx.fill();
+        ctx.fillStyle = "#5a3e1f";
+        ctx.font = "bold 28px system-ui";
+        ctx.fillText("🌀", centerX-15, centerY+10);
+    }
+
+    // calcular índice actual (el que apunta hacia el marcador fijo "arriba")
+    function getCurrentIndex() {
+        // marcador fijo está en el tope del círculo: dirección = -PI/2 (arriba)
+        let markerDir = -Math.PI/2;  // 12 en punto
+        // necesitamos encontrar la emoción cuyo sector central esté más cerca del marcador
+        let bestIdx = 0;
+        let bestDiff = Infinity;
+        for (let i=0; i<TOTAL; i++) {
+            let sectorCenter = i * ANGLE_PER + ANGLE_PER/2 + rotationAngle;
+            let diff = Math.abs((sectorCenter - markerDir + Math.PI*2) % (Math.PI*2));
+            if (diff < bestDiff) {
+                bestDiff = diff;
+                bestIdx = i;
+            }
+        }
+        return bestIdx;
+    }
+
+    function refreshFromRotation() {
+        drawWheel();
+        currentIndex = getCurrentIndex();
+        updateUIByIndex(currentIndex);
+    }
+
+    // ---- TOUCH/DRAG para girar rueda ----
+    function handleTouchStart(e) {
+        e.preventDefault();
+        const rect = canvasEl.getBoundingClientRect();
+        const touch = e.touches[0];
+        startX = touch.clientX - rect.left;
+        startY = touch.clientY - rect.top;
+        isDragging = true;
+    }
+
+    function handleTouchMove(e) {
+        if (!isDragging) return;
+        e.preventDefault();
+        const rect = canvasEl.getBoundingClientRect();
+        const touch = e.touches[0];
+        const currentX = touch.clientX - rect.left;
+        const deltaX = currentX - startX;
+        // sensibilidad: mover horizontalmente afecta rotación
+        let deltaAngle = deltaX * 0.012;
+        rotationAngle = (rotationAngle + deltaAngle) % (Math.PI*2);
+        startX = currentX;
+        refreshFromRotation();
+    }
+
+    function handleTouchEnd(e) {
+        isDragging = false;
+        e.preventDefault();
+    }
+
+    // ---- botones de gestión específicos según emoción activa ----
+    function showAccept() {
+        const emo = EMOTIONS[currentIndex];
+        dynamicAdvice.innerHTML = `🤲 <strong>Aceptar ${emo.name}:</strong><br> ${emo.accept}`;
+    }
+    function showManage() {
+        const emo = EMOTIONS[currentIndex];
+        dynamicAdvice.innerHTML = `🛠️ <strong>Gestionar ${emo.name}:</strong><br> ${emo.manage}`;
+    }
+
+    function selectAndShowEmotion() {
+        const emo = EMOTIONS[currentIndex];
+        dynamicAdvice.innerHTML = `✨ Has elegido <strong>${emo.name}</strong>. Tómate un momento. ${emo.accept.substring(0, 100)}... Usa los botones para más técnicas.`;
+        // vibración suave si el navegador lo permite
+        if (navigator.vibrate) navigator.vibrate(50);
+    }
+
+    // inicializar
+    function init() {
+        canvas = canvasEl;
+        ctx = canvas.getContext('2d');
+        canvas.width = 600;
+        canvas.height = 600;
+        rotationAngle = 0.0;
+        refreshFromRotation();
+
+        canvas.addEventListener('touchstart', handleTouchStart, {passive: false});
+        canvas.addEventListener('touchmove', handleTouchMove, {passive: false});
+        canvas.addEventListener('touchend', handleTouchEnd);
+        canvas.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            startX = e.clientX - rect.left;
+            isDragging = true;
+            function onMouseMove(moveEvent) {
+                if (!isDragging) return;
+                const rectNow = canvas.getBoundingClientRect();
+                const curX = moveEvent.clientX - rectNow.left;
+                const delta = curX - startX;
+                rotationAngle = (rotationAngle + delta * 0.012) % (Math.PI*2);
+                startX = curX;
+                refreshFromRotation();
+            }
+            function onMouseUp() {
+                isDragging = false;
+                window.removeEventListener('mousemove', onMouseMove);
+                window.removeEventListener('mouseup', onMouseUp);
+            }
+            window.addEventListener('mousemove', onMouseMove);
+            window.addEventListener('mouseup', onMouseUp);
+        });
+
+        selectBtn.addEventListener('click', selectAndShowEmotion);
+        acceptBtn.addEventListener('click', showAccept);
+        manageBtn.addEventListener('click', showManage);
+    }
+
+    init();
+</script>
+</body>
+</html>
