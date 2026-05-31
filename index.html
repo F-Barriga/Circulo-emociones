@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
-    <title>Laboratorio de Emociones · Mezclador Completo</title>
+    <title>Laboratorio de Emociones · Mezclador Válido</title>
     <style>
         * {
             margin: 0;
@@ -86,6 +86,10 @@
             outline: none;
             border-color: #ffb347;
         }
+        select option:disabled {
+            color: #5a577a;
+            background: #1a1830;
+        }
 
         .mezclar-btn {
             background: linear-gradient(95deg, #ffb347, #ff7e05);
@@ -161,12 +165,6 @@
             background: rgba(255, 180, 70, 0.3);
             margin: 16px 0;
         }
-        .empty-message {
-            text-align: center;
-            color: #9f9bc2;
-            padding: 30px 20px;
-            font-style: italic;
-        }
         .badge-mezcla {
             display: inline-block;
             background: #2a2742;
@@ -176,11 +174,23 @@
             color: #ffcd94;
             margin-top: 12px;
         }
+        .empty-message {
+            text-align: center;
+            color: #9f9bc2;
+            padding: 30px 20px;
+            font-style: italic;
+        }
         footer {
             text-align: center;
             font-size: 0.7rem;
             color: #5a577a;
             margin-top: 28px;
+        }
+        .aviso {
+            text-align: center;
+            font-size: 0.7rem;
+            color: #ffb347aa;
+            margin-top: 10px;
         }
     </style>
 </head>
@@ -188,7 +198,7 @@
 <div class="app-container">
     <div class="header">
         <h1>🧪 Laboratorio de emociones</h1>
-        <p>Mezcla dos emociones · Descubre lo que nace de su unión</p>
+        <p>Mezcla dos emociones · Solo combinaciones reales</p>
     </div>
 
     <div class="mixer-card">
@@ -229,259 +239,69 @@
         </div>
 
         <button class="mezclar-btn" id="mezclarBtn">🌀 Mezclar emociones 🌀</button>
+        <div class="aviso">⚡ Solo se pueden mezclar pares que existen en la vida real</div>
     </div>
 
     <div class="resultado-card" id="resultadoContainer">
         <div class="empty-message">
-            ✨ Elige dos emociones y pulsa "Mezclar" ✨<br>
-            Cada combinación crea una nueva emoción con su propia historia.
+            ✨ Elige dos emociones válidas y pulsa "Mezclar" ✨<br>
+            Las opciones inválidas aparecerán deshabilitadas.
         </div>
     </div>
-    <footer>Basado en la rueda de Plutchik + exploración emocional · 66 combinaciones posibles</footer>
+    <footer>Basado en psicología emocional · solo combinaciones reales validadas</footer>
 </div>
 
 <script>
     // ============================================================
-    // BASE DE DATOS COMPLETA DE MEZCLAS (40+ combinaciones clave)
+    // REGLAS DE COMBINACIONES VÁLIDAS (solo las que existen)
     // ============================================================
-    
+    const combinacionesValidas = {
+        alegria: ["tristeza", "confianza", "anticipacion", "calma", "esperanza", "miedo", "asco", "soledad", "rabia"],
+        tristeza: ["alegria", "rabia", "asco", "soledad", "confianza", "anticipacion", "calma"],
+        rabia: ["tristeza", "miedo", "asco", "culpa", "sorpresa", "calma", "alegria"],
+        miedo: ["rabia", "anticipacion", "confianza", "sorpresa", "esperanza", "calma", "culpa", "alegria"],
+        confianza: ["alegria", "miedo", "tristeza", "asco", "calma"],
+        asco: ["rabia", "tristeza", "sorpresa", "confianza", "alegria"],
+        sorpresa: ["rabia", "miedo", "tristeza", "asco", "alegria"],
+        anticipacion: ["alegria", "miedo", "tristeza", "esperanza"],
+        calma: ["alegria", "tristeza", "rabia", "miedo", "confianza"],
+        culpa: ["rabia", "miedo", "tristeza", "esperanza"],
+        esperanza: ["alegria", "miedo", "anticipacion", "culpa", "soledad"],
+        soledad: ["alegria", "tristeza", "esperanza"]
+    };
+
+    // ============================================================
+    // BASE DE DATOS DE MEZCLAS (con sus descripciones)
+    // ============================================================
     const mezclas = {
-        // --- Alegría + ---
-        "alegria+confianza": {
-            nombre: "Amor", emoji: "❤️🥰",
-            desc: "El amor es la conexión cálida y profunda con alguien o algo. Surge de la alegría de compartir y la confianza en que esa presencia es segura.",
-            ejemplos: ["Sentir afecto incondicional por tu familia o mascota.", "Disfrutar de una amistad donde puedes ser tú mismo sin miedo al juicio.", "El amor hacia una actividad que te llena y en la que confías en tu talento."],
-            identificar: ["Sientes calidez en el pecho, ganas de cuidar o proteger.", "La mirada se vuelve suave, sonríes de forma auténtica.", "Piensas: 'Me siento en casa cuando estoy con esto/alguien'."]
-        },
-        "alegria+tristeza": {
-            nombre: "Nostalgia", emoji: "📼🌅",
-            desc: "La nostalgia es esa mezcla agridulce de recordar algo feliz que ya no está presente. Se siente calor y melancolía al mismo tiempo.",
-            ejemplos: ["Revisar fotos de la infancia y extrañar esa etapa.", "Escuchar una canción que te transporta a un amor pasado, pero sonríes.", "Volver a tu pueblo natal y sentir que todo cambió, pero con cariño."],
-            identificar: ["Una sonrisa pequeña mientras tus ojos se humedecen.", "Suspiras profundamente sin saber si es alegría o pena.", "Piensas: 'Qué bonito fue, aunque ya no vuelva'."]
-        },
-        "alegria+anticipacion": {
-            nombre: "Optimismo", emoji: "☀️🔮",
-            desc: "El optimismo es la certeza de que algo bueno va a suceder. Mezcla la alegría del presente con la esperanza de lo que viene.",
-            ejemplos: ["Preparar un viaje y emocionarte con lo que vivirás.", "Empezar un proyecto nuevo creyendo que saldrá bien.", "Ver un problema y pensar: 'De esto puedo aprender algo bueno'."],
-            identificar: ["Tus hombros están relajados y tu respiración es profunda.", "Caminas con pasos más ligeros, hasta saltas un poco.", "Frase recurrente: 'Seguro que algo hermoso está por llegar'."]
-        },
-        "alegria+calma": {
-            nombre: "Paz interior", emoji: "🕊️✨",
-            desc: "La paz interior es la alegría sin ruido. Es sentirse bien sin necesidad de euforia, simplemente estando presente.",
-            ejemplos: ["Amanecer sin prisa, tomar café mirando la luz del sol.", "Estar en la naturaleza sin preocupaciones.", "Después de meditar, sentir que todo está bien tal como es."],
-            identificar: ["Cuerpo suelto, respiración lenta.", "No necesitas hacer nada, solo estar.", "Piensas: 'Ahora mismo, estoy completa'."]
-        },
-        "alegria+esperanza": {
-            nombre: "Inspiración", emoji: "✨🦋",
-            desc: "La inspiración nace cuando la alegría del presente se encuentra con la esperanza de crear algo nuevo. Es una chispa que invita a la acción.",
-            ejemplos: ["Tener una idea brillante que te emociona desarrollar.", "Ver a alguien lograr algo y pensar 'yo también puedo'", "Despertar con ganas de escribir, pintar o bailar."],
-            identificar: ["Ojos brillantes, energía contenida.", "Quieres moverte, hacer algo con tus manos.", "Frase: '¡Qué ganas de empezar!'"]
-        },
-
-        // --- Rabia + ---
-        "rabia+asco": {
-            nombre: "Desprecio", emoji: "🙄👎",
-            desc: "El desprecio aparece cuando sentimos que alguien o algo nos ofende profundamente o nos parece indigno. Es una emoción de distancia y superioridad moral.",
-            ejemplos: ["Ver una injusticia y sentir que la persona que la cometió es 'menos' que tú.", "Sentir rechazo por alguien que traicionó tu confianza repetidamente.", "Una actitud de 'no merece ni mi tiempo' después de una humillación."],
-            identificar: ["Tu labio superior puede levantarse levemente (gesto de asco + rabia).", "Cruzas los brazos y desvías la mirada.", "Pensamiento: 'Esto me da asco y rabia, no vale la pena'."]
-        },
-        "rabia+miedo": {
-            nombre: "Frustración", emoji: "😤🧱",
-            desc: "La frustración nace cuando queremos cambiar algo, pero sentimos miedo o incapacidad de lograrlo. Es un choque entre el impulso de acción y el freno del miedo.",
-            ejemplos: ["Intentar resolver un problema y topar siempre con el mismo obstáculo.", "Querer hablar en público pero el miedo te paraliza y te enfadas contigo.", "Estudiar mucho y sentir que no avanzas → rabia + miedo al fracaso."],
-            identificar: ["Tensión muscular, apretar mandíbula o puños.", "Querer llorar de impotencia pero también golpear algo.", "Frase: 'Lo intento pero no puedo, y me enfada no poder'."]
-        },
-        "rabia+tristeza": {
-            nombre: "Indignación", emoji: "😤😢",
-            desc: "La indignación es rabia que duele. Es sentir que algo es injusto y además te causa tristeza porque afecta a alguien que quieres o a tus valores.",
-            ejemplos: ["Ver cómo maltratan a un animal y sentir impotencia + pena.", "Que despidan a un compañero injustamente y no puedas hacer nada.", "Enterarte de una noticia de corrupción y sentir que el mundo está mal."],
-            identificar: ["Nudo en la garganta, ganas de gritar y llorar a la vez.", "Respiración agitada, manos temblorosas.", "Pensamiento: 'Esto no está bien y duele'."]
-        },
-        "rabia+culpa": {
-            nombre: "Autodesprecio", emoji: "😞💢",
-            desc: "El autodesprecio es la rabia dirigida hacia uno mismo, mezclada con la culpa por haber actuado mal. Es una de las mezclas más dolorosas.",
-            ejemplos: ["Cometer un error importante y no poder perdonarte.", "Decir algo hiriente y después odiarte por ello.", "Sentir que 'siempre hago todo mal' y enfadarte contigo mismo."],
-            identificar: ["Puños apretados contra tu propio cuerpo.", "Evitas mirarte al espejo.", "Frase recurrente: 'Soy un idiota, no aprendo'."]
-        },
-
-        // --- Miedo + ---
-        "miedo+anticipacion": {
-            nombre: "Ansiedad", emoji: "😰⏳",
-            desc: "La ansiedad es anticipar un peligro incierto. Mezcla el miedo a lo que puede pasar y la sobreatención al futuro.",
-            ejemplos: ["Pensar en un examen y que tu corazón se acelere días antes.", "Esperar una respuesta importante y no poder concentrarte.", "Sentir que algo malo va a pasar sin razón clara."],
-            identificar: ["Nudo en el estómago, respiración corta.", "Dificultad para dormir por darle vueltas al futuro.", "Pensamiento: '¿Y si pasa algo malo?' una y otra vez."]
-        },
-        "miedo+confianza": {
-            nombre: "Sumisión", emoji: "🙇‍♂️🔗",
-            desc: "La sumisión aparece cuando confías en alguien que también te da miedo. Es una entrega con temor, típica de relaciones de poder desigual.",
-            ejemplos: ["Hacer todo lo que tu jefe pide por miedo a ser despedido, aunque confías en su juicio.", "Quedarte en una relación por miedo a la soledad, aunque admiras a la otra persona.", "Seguir una norma injusta por respeto temeroso a la autoridad."],
-            identificar: ["Postura encorvada, evitas mirar a los ojos.", "Asientes sin estar convencido.", "Piensas: 'Mejor no molestar, aunque no me guste'."]
-        },
-        "miedo+sorpresa": {
-            nombre: "Alarma", emoji: "🚨😨",
-            desc: "La alarma es una reacción instantánea ante un peligro inesperado. Te prepara para huir o luchar.",
-            ejemplos: ["Un ruido fuerte en medio de la noche.", "Que alguien se te acerque por sorpresa en la calle.", "Un perro que ladra de repente muy cerca."],
-            identificar: ["Cuerpo rígido, ojos muy abiertos.", "Corazón late muy rápido.", "Pensamiento: '¡Peligro! ¿Qué hago?'"]
-        },
-        "miedo+esperanza": {
-            nombre: "Incertidumbre", emoji: "🌫️❓",
-            desc: "La incertidumbre es no saber si pasará algo bueno o malo. Esperas lo mejor pero temes lo peor.",
-            ejemplos: ["Esperar el resultado de una biopsia.", "Esperar una respuesta después de una entrevista de trabajo.", "Empezar una relación nueva sin saber si funcionará."],
-            identificar: ["Inquietud constante, no puedes concentrarte.", "Revisas el teléfono una y otra vez.", "Pensamiento: 'Ojalá sí, pero ¿y si no?'"]
-        },
-
-        // --- Tristeza + ---
-        "tristeza+asco": {
-            nombre: "Remordimiento", emoji: "😣💧",
-            desc: "El remordimiento duele porque mezcla la tristeza de haber actuado mal con el asco o rechazo hacia tu propia acción.",
-            ejemplos: ["Decir algo hiriente y después no poder perdonarte.", "Recordar una traición que cometiste y sentir malestar físico.", "No ayudar a alguien cuando pudo y luego lamentarlo profundamente."],
-            identificar: ["Sientes un peso en el pecho y ganas de esconderte.", "Revi ves mentalmente la escena una y otra vez.", "Frase: 'Debería haber actuado distinto, me doy asco'."]
-        },
-        "tristeza+soledad": {
-            nombre: "Abandono", emoji: "🏚️😔",
-            desc: "El abandono es la sensación de que nadie está ahí para ti. Mezcla la soledad de no tener compañía y la tristeza de haber perdido el vínculo.",
-            ejemplos: ["Después de una ruptura, sentir que el mundo sigue y tú te quedas atrás.", "Que tus amigos hagan planes sin invitarte.", "Extrañar a alguien que se fue y no volverá."],
-            identificar: ["Pesadez en brazos y piernas, como si costara moverse.", "Silencio interno prolongado, ganas de aislarte.", "Frase: 'Ya no le importo a nadie'."]
-        },
-        "tristeza+calma": {
-            nombre: "Melancolía", emoji: "🌧️🕯️",
-            desc: "La melancolía es una tristeza suave y pausada. No duele como el llanto, sino que invita a la reflexión tranquila.",
-            ejemplos: ["Mirar la lluvia por la ventana recordando a alguien.", "Escuchar música clásica y sentir una paz triste.", "Pasear solo al atardecer sintiendo que algo falta, pero sin angustia."],
-            identificar: ["Respiración lenta, mirada perdida.", "No tienes ganas de hablar, pero tampoco estás mal.", "Pensamiento: 'Así está bien, aunque duela un poco'."]
-        },
-
-        // --- Sorpresa + ---
-        "sorpresa+tristeza": {
-            nombre: "Decepción", emoji: "😞💔",
-            desc: "La decepción es el golpe de darte cuenta de que algo no era como creías. Entra la sorpresa del quiebre y la tristeza de la pérdida de ilusión.",
-            ejemplos: ["Esperar un regalo increíble y recibir algo que no te gusta.", "Confiar en un amigo y descubrir que habló mal de ti.", "Que una película que esperabas sea muy mala."],
-            identificar: ["Tu cara cambia rápido de emoción → abres los ojos y luego bajas la mirada.", "Sientes un vacío en el estómago.", "Frase: 'No me lo esperaba... y duele'."]
-        },
-        "sorpresa+alegria": {
-            nombre: "Asombro", emoji: "🤩✨",
-            desc: "El asombro es una sorpresa que maravilla. Te deja sin aliento pero con una sonrisa.",
-            ejemplos: ["Ver un atardecer increíble en la montaña.", "Que alguien te dé un regillo inesperado y hermoso.", "Presenciar un acto de bondad enorme."],
-            identificar: ["Boca abierta, ojos muy brillantes.", "Te quedas quieto, sin palabras.", "Piensas: '¡Qué hermoso es esto!'"]
-        },
-
-        // --- Confianza + ---
-        "confianza+calma": {
-            nombre: "Seguridad", emoji: "🛡️😌",
-            desc: "La seguridad es sentirse protegido sin esfuerzo. No hay prisa ni alerta, solo certeza.",
-            ejemplos: ["Dormir sabiendo que alguien cuida de ti.", "Realizar una tarea que dominas perfectamente.", "Estar en tu casa después de un día difícil."],
-            identificar: ["Cuerpo relajado, hombros hacia atrás.", "No necesitas comprobar nada.", "Frase: 'Todo está bien, estoy a salvo'."]
-        },
-
-        // --- Culpa + ---
-        "culpa+esperanza": {
-            nombre: "Vulnerabilidad", emoji: "🕯️🌧️",
-            desc: "Mezcla el anhelo de que algo mejore (esperanza) con la sensación de ser indigno (culpa). Es frágil pero sincera.",
-            ejemplos: ["Pedir perdón sin saber si te aceptarán, pero deseando reconciliarte.", "Empezar terapia aunque sientes que 'tú tienes la culpa' de tus problemas.", "Confesar un error con la esperanza de ser comprendido."],
-            identificar: ["Voz más baja, manos temblorosas.", "Tartamudeo leve al hablar.", "Pensamiento: 'Ojalá funcione, aunque lo dudo'."]
-        },
-        "culpa+tristeza": {
-            nombre: "Arrepentimiento", emoji: "😞📿",
-            desc: "El arrepentimiento es más profundo que la culpa: incluye la tristeza genuina por el daño causado y el deseo de reparar.",
-            ejemplos: ["Dejar ir a alguien que amabas por tu culpa.", "No haber visitado a un familiar antes de que falleciera.", "Haber malgastado años en algo que no valía la pena."],
-            identificar: ["Lloras con más facilidad al recordar.", "Buscas maneras de compensar.", "Pensamiento: 'Si pudiera volver atrás, lo haría diferente'."]
-        }
-    };
-
-    // Nombres para mostrar
-    const nombres = {
-        alegria: "Alegría", tristeza: "Tristeza", rabia: "Rabia", miedo: "Miedo",
-        confianza: "Confianza", asco: "Asco", sorpresa: "Sorpresa", anticipacion: "Anticipación",
-        calma: "Calma", culpa: "Culpa", esperanza: "Esperanza", soledad: "Soledad"
-    };
-
-    // Generador inteligente para mezclas no definidas
-    function generarMezclaGenerica(emo1, emo2) {
-        const nombre1 = nombres[emo1];
-        const nombre2 = nombres[emo2];
-        return {
-            nombre: `${nombre1} + ${nombre2}`,
-            emoji: "🌀",
-            desc: `La combinación de ${nombre1} y ${nombre2} crea una emoción única y personal. No tiene un nombre fijo porque cada persona la vive de manera distinta. Es una invitación a explorar territorios emocionales poco transitados.`,
-            ejemplos: [
-                `Sentir ${nombre1.toLowerCase()} y ${nombre2.toLowerCase()} al mismo tiempo ante una situación nueva.`,
-                `Recordar un momento donde estas dos emociones se mezclaron sin saber cómo nombrarlas.`,
-                `Observar cómo tu cuerpo reacciona ante esta mezcla particular.`
-            ],
-            identificar: [
-                `Nota si predomina más ${nombre1.toLowerCase()} o ${nombre2.toLowerCase()} en diferentes momentos.`,
-                `Pregúntate: ¿Qué necesita esta mezcla de mí?`,
-                `Permite que la emoción tenga su propio nombre, aunque sea solo para ti.`
-            ]
-        };
-    }
-
-    function obtenerMezcla(emo1, emo2) {
-        if (emo1 === emo2) {
-            return {
-                nombre: `${nombres[emo1]} pura`,
-                emoji: "🔁",
-                desc: `Has elegido la misma emoción dos veces. ${nombres[emo1]} en estado puro, sin mezcla. A veces las emociones no necesitan combinarse, solo ser sentidas.`,
-                ejemplos: [
-                    `Permítete sentir ${nombres[emo1].toLowerCase()} sin etiquetas ni juicios.`,
-                    `Observa cómo se manifiesta en tu cuerpo.`,
-                    `Pregúntale a la emoción: ¿Qué necesitas?`
-                ],
-                identificar: [
-                    `Es una sola emoción, pero puede tener distintas intensidades.`,
-                    `Puede que en realidad haya otras emociones debajo.`,
-                    `La pureza es solo un punto de partida.`
-                ]
-            };
-        }
+        "alegria+confianza": { nombre: "Amor", emoji: "❤️🥰", desc: "El amor es la conexión cálida y profunda con alguien o algo. Surge de la alegría de compartir y la confianza en que esa presencia es segura.", ejemplos: ["Sentir afecto incondicional por tu familia o mascota.", "Disfrutar de una amistad donde puedes ser tú mismo.", "El amor hacia una actividad que te llena."], identificar: ["Calidez en el pecho, ganas de cuidar.", "Mirada suave, sonrisa auténtica.", "Piensas: 'Me siento en casa'."] },
+        "alegria+tristeza": { nombre: "Nostalgia", emoji: "📼🌅", desc: "La nostalgia es esa mezcla agridulce de recordar algo feliz que ya no está.", ejemplos: ["Revisar fotos de la infancia.", "Escuchar una canción que te transporta a un amor pasado.", "Volver a tu pueblo natal y sentir que todo cambió."], identificar: ["Sonrisa pequeña mientras se humedecen los ojos.", "Suspiras profundamente.", "Piensas: 'Qué bonito fue, aunque ya no vuelva'."] },
+        "alegria+anticipacion": { nombre: "Optimismo", emoji: "☀️🔮", desc: "El optimismo es la certeza de que algo bueno va a suceder.", ejemplos: ["Preparar un viaje con ilusión.", "Empezar un proyecto nuevo creyendo que saldrá bien.", "Ver un problema y pensar que se puede aprender."], identificar: ["Hombros relajados, respiración profunda.", "Pasos más ligeros.", "Frase: 'Algo hermoso está por llegar'."] },
+        "alegria+calma": { nombre: "Paz interior", emoji: "🕊️✨", desc: "La paz interior es la alegría sin ruido. Sentirse bien sin euforia.", ejemplos: ["Amanecer sin prisa.", "Estar en la naturaleza sin preocupaciones.", "Después de meditar."], identificar: ["Cuerpo suelto, respiración lenta.", "No necesitas hacer nada.", "Piensas: 'Ahora mismo, estoy bien'."] },
+        "alegria+esperanza": { nombre: "Inspiración", emoji: "✨🦋", desc: "La inspiración nace cuando la alegría se encuentra con la esperanza de crear.", ejemplos: ["Tener una idea brillante.", "Ver a alguien lograr algo y pensar 'yo también puedo'.", "Despertar con ganas de crear."], identificar: ["Ojos brillantes, energía contenida.", "Quieres moverte, hacer algo.", "Frase: '¡Qué ganas de empezar!'"] },
+        "alegria+miedo": { nombre: "Euforia nerviosa", emoji: "😬🎢", desc: "Una mezcla de emoción y miedo. Típica antes de algo intenso pero deseado.", ejemplos: ["Subir a una montaña rusa.", "Antes de una primera cita emocionante.", "Segundos antes de saltar en paracaídas."], identificar: ["Mariposas en el estómago.", "Sonrisa nerviosa, respiración acelerada.", "Piensas: 'Qué miedo, pero qué ganas'."] },
+        "alegria+asco": { nombre: "Burla sarcástica", emoji: "😏🤢", desc: "Reírse de algo que causa rechazo. Una mezcla defensiva.", ejemplos: ["Hacer un meme de algo grotesco.", "Reírte de una situación asquerosa para sobrellevarla.", "Sarcasmo ante una injusticia absurda."], identificar: ["Sonrisa torcida, ceja levantada.", "Comentario irónico.", "Piensas: 'Esto es ridículo y asqueroso'."] },
+        "alegria+soledad": { nombre: "Falsa alegría", emoji: "😄🌙", desc: "Sonreír por fuera mientras se siente vacío por dentro.", ejemplos: ["Reír en una fiesta pero sentirse solo.", "Poner buena cara en el trabajo mientras extrañas a alguien.", "Subir fotos felices cuando estás triste."], identificar: ["Sonrisa que no llega a los ojos.", "Cansancio repentino.", "Piensas: 'Ojalá me sintiera como aparento'."] },
+        "alegria+rabia": { nombre: "Euforia competitiva", emoji: "🏆😤", desc: "Ganar o lograr algo con rabia contenida hacia un rival o hacia uno mismo.", ejemplos: ["Ganar un partido tras una provocación.", "Superar a alguien que te subestimó.", "Lograr algo por 'demostrarles' a otros."], identificar: ["Puños apretados pero sonrisa.", "Respiración agitada y euforia.", "Piensas: '¡Lo logré, y que les quede claro!'"] },
         
-        const key = [emo1, emo2].sort().join('+');
-        if (mezclas[key]) return mezclas[key];
-        return generarMezclaGenerica(emo1, emo2);
-    }
+        "rabia+tristeza": { nombre: "Indignación", emoji: "😤😢", desc: "Rabia que duele. Injusticia que entristece.", ejemplos: ["Ver maltrato animal.", "Que despidan a un buen compañero.", "Corrupción que afecta a los débiles."], identificar: ["Nudo en garganta, ganas de gritar y llorar.", "Respiración agitada.", "Piensas: 'Esto no está bien y duele'."] },
+        "rabia+miedo": { nombre: "Frustración", emoji: "😤🧱", desc: "Querer cambiar algo pero sentir miedo o incapacidad.", ejemplos: ["Toparte siempre con el mismo obstáculo.", "Querer hablar en público y paralizarte.", "Estudiar mucho y sentir que no avanzas."], identificar: ["Tensión muscular, mandíbula apretada.", "Impotencia.", "Frase: 'Lo intento pero no puedo'."] },
+        "rabia+asco": { nombre: "Desprecio", emoji: "🙄👎", desc: "Sentir que alguien o algo es indigno. Distancia y superioridad moral.", ejemplos: ["Injusticia repetida.", "Traición sistemática.", "Actitud de 'no merece mi tiempo'."], identificar: ["Labio superior levantado.", "Brazos cruzados, desvío de mirada.", "Piensas: 'Esto me da asco y rabia'."] },
+        "rabia+culpa": { nombre: "Autodesprecio", emoji: "😞💢", desc: "Rabia dirigida hacia uno mismo mezclada con culpa.", ejemplos: ["Cometer un error imperdonable para ti.", "Decir algo hiriente y odiarte.", "Sentir que 'siempre hago todo mal'."], identificar: ["Puños contra tu propio cuerpo.", "Evitas mirarte al espejo.", "Frase: 'Soy un idiota, no aprendo'."] },
+        "rabia+sorpresa": { nombre: "Ultraje", emoji: "😠❗", desc: "Enfado repentino por algo inesperado y ofensivo.", ejemplos: ["Enterarte de una traición por sorpresa.", "Que te insulten de la nada.", "Descubrir una mentira grande inesperadamente."], identificar: ["Parálisis inicial, luego furia.", "Cara de shock que se transforma en enfado.", "Piensas: '¡¿Cómo te atreves?!'"] },
+        "rabia+calma": { nombre: "Rabia fría", emoji: "❄️😠", desc: "Enfado contenido, calculado. Típico de venganza o decisión firme.", ejemplos: ["Planear una respuesta tras una ofensa.", "Cortar una relación sin gritar.", "Tomar una decisión drástica con calma."], identificar: ["Voz baja pero firme.", "Mirada fija, cuerpo quieto.", "Piensas: 'Ya veremos quién ríe al final'."] },
 
-    // Renderizado
-    const mezclarBtn = document.getElementById('mezclarBtn');
-    const emotionASelect = document.getElementById('emotionA');
-    const emotionBSelect = document.getElementById('emotionB');
-    const resultadoContainer = document.getElementById('resultadoContainer');
+        "miedo+anticipacion": { nombre: "Ansiedad", emoji: "😰⏳", desc: "Anticipar un peligro incierto.", ejemplos: ["Pensar en un examen días antes.", "Esperar una respuesta importante.", "Sensación de que algo malo va a pasar."], identificar: ["Nudo en estómago, respiración corta.", "Insomnio por darle vueltas.", "Frase: '¿Y si pasa algo malo?'"] },
+        "miedo+confianza": { nombre: "Sumisión", emoji: "🙇‍♂️🔗", desc: "Confiar en alguien que también da miedo.", ejemplos: ["Hacer todo lo que tu jefe temido dice.", "Quedarte en una relación por miedo a la soledad.", "Seguir una norma injusta por respeto temeroso."], identificar: ["Postura encorvada.", "Asientes sin convencerte.", "Piensas: 'Mejor no molestar'."] },
+        "miedo+sorpresa": { nombre: "Alarma", emoji: "🚨😨", desc: "Reacción ante un peligro inesperado.", ejemplos: ["Ruido fuerte en la noche.", "Que alguien se te acerque por sorpresa.", "Un perro que ladra de repente."], identificar: ["Cuerpo rígido, ojos abiertos.", "Corazón acelerado.", "Piensas: '¡Peligro! ¿Qué hago?'"] },
+        "miedo+esperanza": { nombre: "Incertidumbre", emoji: "🌫️❓", desc: "No saber si pasará algo bueno o malo.", ejemplos: ["Esperar resultado de una biopsia.", "Esperar respuesta de una entrevista.", "Empezar una relación nueva."], identificar: ["Inquietud constante.", "Revisas el teléfono una y otra vez.", "Frase: 'Ojalá sí, pero ¿y si no?'"] },
+        "miedo+calma": { nombre: "Disociación", emoji: "🌫️🧊", desc: "Bloqueo emocional ante miedo extremo. Congelamiento.", ejemplos: ["Quedarte en blanco ante un trauma.", "No sentir nada durante una emergencia.", "Desconexión tras una noticia horrible."], identificar: ["Sensación de irrealidad.", "Cuerpo quieto, mente vacía.", "Piensas: 'Esto no me está pasando a mí'."] },
+        "miedo+culpa": { nombre: "Paranoia", emoji: "👀😰", desc: "Miedo a ser castigado por algo que hiciste (o crees que hiciste).", ejemplos: ["Creer que todos te juzgan.", "Miedo a que descubran un error.", "Sensación de ser vigilado."], identificar: ["Mirar hacia atrás constantemente.", "Desconfianza extrema.", "Frase: '¿Y si se enteran?'"] },
 
-    function renderizarResultado(emoA, emoB) {
-        const mezcla = obtenerMezcla(emoA, emoB);
-        const html = `
-            <div class="emotion-title">
-                <span class="emotion-badge">${mezcla.emoji}</span>
-                <span>${mezcla.nombre}</span>
-            </div>
-            <div class="section">
-                <div class="section-title">📖 ¿Qué es esta emoción?</div>
-                <div class="desc-text">${mezcla.desc}</div>
-            </div>
-            <div class="section">
-                <div class="section-title">📝 Ejemplos cotidianos</div>
-                <ul class="examples-list">
-                    ${mezcla.ejemplos.map(ej => `<li>✨ ${ej}</li>`).join('')}
-                </ul>
-            </div>
-            <div class="hr-gold"></div>
-            <div class="section">
-                <div class="section-title">🔍 Cómo identificar esta emoción</div>
-                <ul class="identify-list">
-                    ${mezcla.identificar.map(id => `<li>🔸 ${id}</li>`).join('')}
-                </ul>
-            </div>
-            <div class="badge-mezcla">
-                🧬 ${nombres[emoA]} + ${nombres[emoB]}
-            </div>
-        `;
-        resultadoContainer.innerHTML = html;
-    }
+        "tristeza+asco": { nombre: "Remordimiento", emoji: "😣💧", desc: "Tristeza por haber actuado mal, mezclada con asco hacia uno mismo.", ejemplos: ["Decir algo hiriente y no poder perdonarte.", "Recordar una traición que cometiste.", "No ayudar a alguien y lamentarlo."], identificar: ["Peso en el pecho, ganas de esconderte.", "Revives la escena una y otra vez.", "Frase: 'Debería haber actuado distinto'."] },
+        "tristeza+soledad": { nombre: "Abandono", emoji: "🏚️😔", desc: "Nadie está ahí para ti. Pérdida de vínculo.", ejemplos: ["Tras una ruptura.", "Que tus amigos hagan planes sin ti.", "Extrañar a alguien que se fue."], identificar: ["Pesadez en brazos y piernas.", "Ganas de aislarte.", "Frase: 'Ya no le importo a nadie'."] },
+        "tristeza+calma": { nombre: "Melancolía", emoji: "🌧️🕯️", desc: "Tristeza suave y pausada. Invita a la reflexión.", ejemplos: ["Mirar la lluvia recordando a alguien.", "Escuchar música clásica con una paz triste.", "Pasear solo al atardecer."], identificar: ["Respiración lenta, mirada perdida.", "No estás mal, solo quieto.", "Piensas: 'Así está bien, aunque duela un poco'."] },
+        "tristeza+confianza": { nombre: "Dependencia emocional", emoji: "🪢😢", desc: "Confiar en alguien que sabes que te hace daño.", ejemplos: ["Volver con quien te engañó.", "Esperar que cambie alguien que no lo hará.", "Quedarte donde no te valoran por 'amor'."], identificar: ["Justificas a quien te duele.", "Miedo a soltar.", "Frase: 'Sin él/ella no soy nada'."] },
+        "tristeza+anticipacion": { nombre: "Desesperanza", emoji: "🌑😞", desc: "Esperar que nada bueno va a pasar.", ejemplos: ["Sentir que el futuro es gris.", "Pensar 'para qué esforzarse'.", "Depresión clínica."], identificar: ["Falta de energía o motivación.", "No ves salida.", "Frase: 'Nunca va a mejorar'."] },
 
-    mezclarBtn.addEventListener('click', () => {
-        const emoA = emotionASelect.value;
-        const emoB = emotionBSelect.value;
-        renderizarResultado(emoA, emoB);
-        if (navigator.vibrate) navigator.vibrate(30);
-    });
-</script>
-</body>
-</html>
+        "sorpresa+tristeza": { nombre: "Decepción", emoji: "😞💔", desc: "Golpe de darte cuenta de que algo no era como creías.", ejemplos: ["Esperar un regalo increíble y no gustarte.", "Descubrir que un amigo habló mal de ti.", "Una película
